@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $subject = "Password Reset Request";
         $message = "Click the following link to reset your password: <a href='$reset_link'>$reset_link</a>. Link expires in 1 hour.";
-        send_email($email, $subject, $message);
+        send_email($email, $subject, $message, $pdo);
 
         set_flash_message('success', 'Password reset link has been sent to your email.');
     } else {

@@ -6,6 +6,9 @@ check_auth();
 check_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die("CSRF token validation failed.");
+    }
     $subject = sanitize($_POST['subject']);
     $message = $_POST['message']; // Allow HTML in broadcast?
 
@@ -14,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $success_count = 0;
     foreach ($emails as $email) {
-        if (send_email($email, $subject, $message)) {
+        if (send_email($email, $subject, $message, $pdo)) {
             $success_count++;
         }
     }

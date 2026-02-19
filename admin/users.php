@@ -6,6 +6,9 @@ check_auth();
 check_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die("CSRF token validation failed.");
+    }
     $user_id = (int)$_POST['user_id'];
     $new_balance = (float)$_POST['balance'];
     $new_coin_balance = (float)$_POST['coin_balance'];
@@ -65,6 +68,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                         <div class="modal-header">
                             <h5 class="modal-title">Edit User: <?php echo htmlspecialchars($u['username']); ?></h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Send OTP email
             $subject = "Verify your account";
             $message = "Your OTP for verification is: <b>$otp</b>. It expires in 10 minutes.";
-            send_email($email, $subject, $message);
+            send_email($email, $subject, $message, $pdo);
 
             redirect('/auth/verify.php');
         } catch (PDOException $e) {

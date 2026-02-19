@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS contracts (
     price DECIMAL(15, 2) NOT NULL,
     benefits TEXT,
     referral_commission_percentage DECIMAL(5, 2) DEFAULT 0.00,
+    file_path VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -59,10 +60,12 @@ CREATE TABLE IF NOT EXISTS withdrawals (
     user_id INT NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    payment_method_id INT,
     payment_details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS settings (
@@ -70,6 +73,14 @@ CREATE TABLE IF NOT EXISTS settings (
     `key` VARCHAR(50) UNIQUE NOT NULL,
     `value` TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS payment_methods (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    details TEXT NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS notifications (

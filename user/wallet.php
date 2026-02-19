@@ -12,10 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
         die("CSRF token validation failed.");
     }
     $amount = (float)$_POST['amount'];
+    $payment_method_id = (int)$_POST['payment_method_id'];
     $payment_details = sanitize($_POST['payment_details']);
     $min_withdrawal = (float)get_setting($pdo, 'min_withdrawal', '10.00');
 
-    if ($amount >= $min_withdrawal) {
+    if ($amount >= $min_withdrawal && $payment_method_id > 0) {
         if ($user['balance'] >= $amount) {
             $pdo->beginTransaction();
             try {
@@ -24,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
                 $stmt->execute([$amount, $user['id']]);
 
                 // Create withdrawal request
-                $stmt = $pdo->prepare("INSERT INTO withdrawals (user_id, amount, payment_details) VALUES (?, ?, ?)");
-                $stmt->execute([$user['id'], $amount, $payment_details]);
+                $stmt = $pdo->prepare("INSERT INTO withdrawals (user_id, amount, payment_method_id, payment_details) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$user['id'], $amount, $payment_method_id, $payment_details]);
 
                 // Record transaction
                 $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, status, description) VALUES (?, 'withdrawal', ?, 'pending', 'Withdrawal request')");
@@ -50,6 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
 $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC");
 $stmt->execute([$user['id']]);
 $transactions = $stmt->fetchAll();
+
+// Fetch active payment methods
+$stmt = $pdo->query("SELECT * FROM payment_methods WHERE status = 'active'");
+$payment_methods = $stmt->fetchAll();
 
 $page_title = "Wallet";
 $active_page = 'wallet';
@@ -118,9 +123,34 @@ include __DIR__ . '/../includes/header.php';
                         <input type="number" step="0.01" name="amount" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Payment Details (Bank Info, USDT Address, etc.)</label>
-                        <textarea name="payment_details" class="form-control" rows="3" required></textarea>
+                        <label class="form-label">Select Payment Method</label>
+                        <select name="payment_method_id" class="form-select mb-2" id="methodSelect" onchange="updateDetailsHint()">
+                            <option value="">-- Select Method --</option>
+                            <?php foreach ($payment_methods as $pm): ?>
+                                <option value="<?php echo $pm['id']; ?>" data-details="<?php echo htmlspecialchars($pm['details']); ?>">
+                                    <?php echo htmlspecialchars($pm['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div id="methodHint" class="small text-info mb-2"></div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Your Receiving Details</label>
+                        <textarea name="payment_details" class="form-control" rows="3" placeholder="Enter your bank account, wallet address, etc." required></textarea>
+                    </div>
+
+                    <script>
+                    function updateDetailsHint() {
+                        const select = document.getElementById('methodSelect');
+                        const hint = document.getElementById('methodHint');
+                        const selectedOption = select.options[select.selectedIndex];
+                        if (selectedOption.value) {
+                            hint.innerHTML = "<strong>Note:</strong> " + selectedOption.getAttribute('data-details');
+                        } else {
+                            hint.innerHTML = "";
+                        }
+                    }
+                    </script>
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>

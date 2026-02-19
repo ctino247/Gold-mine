@@ -97,7 +97,12 @@ include __DIR__ . '/../includes/header.php';
                     <div>
                         <h5 class="fw-bold mb-1"><?php echo htmlspecialchars($contract['name']); ?></h5>
                         <p class="text-success fw-bold mb-2"><?php echo format_currency($contract['price']); ?></p>
-                        <p class="small text-muted mb-3"><?php echo nl2br(htmlspecialchars($contract['benefits'])); ?></p>
+                        <p class="small text-muted mb-2"><?php echo nl2br(htmlspecialchars($contract['benefits'])); ?></p>
+                        <?php if ($contract['file_path']): ?>
+                            <a href="<?php echo $contract['file_path']; ?>" class="btn btn-sm btn-outline-secondary mb-3" target="_blank">
+                                <i class="fas fa-file-pdf me-1"></i> View Contract Details
+                            </a>
+                        <?php endif; ?>
                     </div>
                     <?php if (in_array($contract['id'], $active_user_contracts)): ?>
                         <span class="badge bg-primary h-50">Active</span>

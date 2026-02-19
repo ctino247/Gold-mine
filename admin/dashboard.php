@@ -56,6 +56,10 @@ include __DIR__ . '/../includes/header.php';
                 <span><i class="fas fa-money-bill-wave me-2"></i> Withdrawals</span>
                 <i class="fas fa-chevron-right small opacity-50"></i>
             </a>
+            <a href="/admin/payment_methods.php" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                <span><i class="fas fa-credit-card me-2"></i> Payment Methods</span>
+                <i class="fas fa-chevron-right small opacity-50"></i>
+            </a>
             <a href="/admin/contracts.php" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
                 <span><i class="fas fa-file-contract me-2"></i> Manage Contracts</span>
                 <i class="fas fa-chevron-right small opacity-50"></i>

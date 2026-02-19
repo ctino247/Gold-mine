@@ -6,6 +6,9 @@ check_auth();
 check_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdrawal_id'])) {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die("CSRF token validation failed.");
+    }
     $id = (int)$_POST['withdrawal_id'];
     $action = $_POST['action']; // approve or reject
 
@@ -21,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdrawal_id'])) {
             $stmt = $pdo->prepare("UPDATE transactions SET status = 'completed' WHERE user_id = ? AND type = 'withdrawal' AND amount = ? AND status = 'pending' LIMIT 1");
             $stmt->execute([$withdrawal['user_id'], -$withdrawal['amount']]);
 
-            send_email($withdrawal['email'], "Withdrawal Approved", "Your withdrawal request for " . format_currency($withdrawal['amount']) . " has been approved and processed.");
+            send_email($withdrawal['email'], "Withdrawal Approved", "Your withdrawal request for " . format_currency($withdrawal['amount']) . " has been approved and processed.", $pdo);
             set_flash_message('success', 'Withdrawal approved.');
         } elseif ($action === 'reject') {
             $stmt = $pdo->prepare("UPDATE withdrawals SET status = 'rejected' WHERE id = ?");
@@ -34,13 +37,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['withdrawal_id'])) {
             $stmt = $pdo->prepare("UPDATE transactions SET status = 'failed' WHERE user_id = ? AND type = 'withdrawal' AND amount = ? AND status = 'pending' LIMIT 1");
             $stmt->execute([$withdrawal['user_id'], -$withdrawal['amount']]);
 
-            send_email($withdrawal['email'], "Withdrawal Rejected", "Your withdrawal request for " . format_currency($withdrawal['amount']) . " was rejected and funds have been returned to your wallet.");
+            send_email($withdrawal['email'], "Withdrawal Rejected", "Your withdrawal request for " . format_currency($withdrawal['amount']) . " was rejected and funds have been returned to your wallet.", $pdo);
             set_flash_message('info', 'Withdrawal rejected.');
         }
     }
 }
 
-$stmt = $pdo->query("SELECT w.*, u.username FROM withdrawals w JOIN users u ON w.user_id = u.id ORDER BY w.created_at DESC");
+$stmt = $pdo->query("SELECT w.*, u.username, pm.name as method_name FROM withdrawals w JOIN users u ON w.user_id = u.id LEFT JOIN payment_methods pm ON w.payment_method_id = pm.id ORDER BY w.created_at DESC");
 $withdrawals = $stmt->fetchAll();
 
 $page_title = "Manage Withdrawals";
@@ -65,10 +68,12 @@ include __DIR__ . '/../includes/header.php';
                     ?>"><?php echo ucfirst($w['status']); ?></span>
                 </div>
                 <h5 class="my-2"><?php echo format_currency($w['amount']); ?></h5>
-                <p class="small text-muted mb-3"><?php echo nl2br(htmlspecialchars($w['payment_details'])); ?></p>
+                <p class="small mb-1"><strong>Method:</strong> <?php echo htmlspecialchars($w['method_name'] ?? 'N/A'); ?></p>
+                <p class="small text-muted mb-3"><strong>Details:</strong> <?php echo nl2br(htmlspecialchars($w['payment_details'])); ?></p>
 
                 <?php if ($w['status'] === 'pending'): ?>
                     <form method="POST" class="d-flex gap-2">
+                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                         <input type="hidden" name="withdrawal_id" value="<?php echo $w['id']; ?>">
                         <button type="submit" name="action" value="approve" class="btn btn-success flex-grow-1">Approve</button>
                         <button type="submit" name="action" value="reject" class="btn btn-danger flex-grow-1">Reject</button>

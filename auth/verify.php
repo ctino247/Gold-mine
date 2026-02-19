@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("UPDATE users SET otp_hash = ?, otp_expiry = ?, resend_count = resend_count + 1, last_resend_at = NOW() WHERE id = ?");
             $stmt->execute([$otp_hash, $otp_expiry, $user_id]);
 
-            send_email($user['email'], "Your new OTP", "Your new OTP is: <b>$otp</b>");
+            send_email($user['email'], "Your new OTP", "Your new OTP is: <b>$otp</b>", $pdo);
             set_flash_message('success', 'A new OTP has been sent to your email.');
         }
     }
