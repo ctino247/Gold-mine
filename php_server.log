@@ -1,0 +1,11 @@
+[Thu Feb 19 17:43:58 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Thu Feb 19 17:44:01 2026] [::1]:48866 Accepted
+[Thu Feb 19 17:44:01 2026] PHP Warning:  Undefined array key "user_id" in /app/includes/auth.php on line 21
+[Thu Feb 19 17:44:01 2026] [::1]:48866 [200]: GET /user/dashboard.php
+[Thu Feb 19 17:44:01 2026] [::1]:48866 Closing
+[Thu Feb 19 17:44:01 2026] [::1]:48876 Accepted
+[Thu Feb 19 17:44:01 2026] [::1]:48880 Accepted
+[Thu Feb 19 17:44:01 2026] [::1]:48876 [200]: GET /assets/css/style.css
+[Thu Feb 19 17:44:01 2026] [::1]:48880 [200]: GET /assets/js/app.js
+[Thu Feb 19 17:44:01 2026] [::1]:48876 Closing
+[Thu Feb 19 17:44:01 2026] [::1]:48880 Closing
