@@ -1,0 +1,27 @@
+/* Mobile-first Styles */
+body {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #0043a8);
+    border: none;
+}
+
+.rounded-card {
+    border-radius: 20px !important;
+}
+
+.alert {
+    border-radius: 12px;
+    margin: 10px;
+}
